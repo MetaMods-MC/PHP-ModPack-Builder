@@ -25,7 +25,7 @@ $modpack = Modpack::create($name, $version, $summary);
 ```
 Pass `name` of your modpack, optional `version` and optional `summary` as description.
 
-To add some resources use next:
+To add some resource use next:
 
 ```PHP
 use MetaMods\Resources\Mod;
@@ -34,13 +34,6 @@ $modpack->add(new Mod('ae2'));
 ```
 
 If you want to add multiple resources:
-
-```PHP
-$modpack->add(new Mod('ae2'))
-    ->add(new Mod('industrial-craft'));
-```
-
-Or use array style:
 
 ```PHP
 $modpack->add([
