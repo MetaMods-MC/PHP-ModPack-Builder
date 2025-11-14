@@ -1,0 +1,34 @@
+{
+    "name": "metamods/php-modpack-builder",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "php", "minecraft", "mod", "mods", "resource", "builder", "modpack"
+    ],
+    "description": "Minecraft modpack MetaMods like format builder",
+    "require": {
+        "php": "^8.1",
+        "ext-zip": "*",
+        "guzzlehttp/guzzle": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "MetaMods\\": "src/",
+            "MetaMods\\Resources": "src/Resources"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MetaMods\\Modpack\\Tests\\": "tests"
+        }
+    },
+    "authors": [
+        {
+            "name": "MetaMods",
+            "email": "support@metamods.net"
+        }
+    ]
+}
