@@ -10,7 +10,7 @@ Minecraft modpack MetaMods like format builder.
 
 Use composer to install this package:
 
-```
+```SHELL
 composer require metamods/php-modpack-builder
 ```
 
