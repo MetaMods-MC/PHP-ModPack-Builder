@@ -15,7 +15,7 @@
     "autoload": {
         "psr-4": {
             "MetaMods\\": "src/",
-            "MetaMods\\Resources": "src/Resources"
+            "MetaMods\\Resources\\": "src/Resources"
         },
         "files": [
             "src/helpers.php"
