@@ -4,10 +4,11 @@ class Override extends Resource
 {
     public function __construct(array $data)
     {
-        $this->path = sprintf("%s/%s/", $this->getPathPrefix(), $data['filename']);
+        $this->path = sprintf("%s/%s", $this->getPathPrefix(), $data['path']);
+        $this->content = $data['content'];
     }
 
-    private function getPathPrefix(): string
+    protected function getPathPrefix(): string
     {
         return 'overrides';
     }

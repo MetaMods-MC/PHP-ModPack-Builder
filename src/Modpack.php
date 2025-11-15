@@ -1,8 +1,10 @@
 <?php namespace MetaMods;
 
+use GuzzleHttp\Client;
+use ZipStream\ZipStream;
 use MetaMods\Resources\Override;
 use MetaMods\Resources\Resource;
-use ZipArchive;
+use ZipStream\Stream\CallbackStreamWrapper;
 use MetaMods\Modpack\Exceptions\ZipArchiveCreateException;
 
 class Modpack
@@ -24,7 +26,7 @@ class Modpack
         $this->summary = $summary;
     }
 
-    public static function create(string $name, string $version, string $summary): self
+    public static function create(string $name, string $version = '1.0.0', string $summary = null): self
     {
         return new self($name, $version, $summary);
     }
@@ -51,24 +53,55 @@ class Modpack
         return $this->resources;
     }
 
+    private function fetchResources()
+    {
+        $ids = array_map(fn (Resource $resource) => $resource->id, $this->resources);
+
+        if (empty($ids)) {
+            return false;
+        }
+
+        $client = new Client([
+            'verify' => false,
+        ]);
+
+        $request = $client->get('https://api.metamods.net/v1/resources/findMany', [
+            'json' => $ids
+        ]);
+
+        $response = json_decode($request->getBody());
+
+        foreach ($response as $fetchedResource) {
+            foreach ($this->getResources() as $resource) {
+                if ($fetchedResource->id === $resource->id) {
+                    $resource->saturate($fetchedResource);
+                    continue 2;
+                }
+            }
+        }
+    }
+
     /**
      * @throws ZipArchiveCreateException
      */
-    public function build(): string
+    public function build(callable $callback): void
     {
-        $zip = new ZipArchive;
+        $this->fetchResources();
 
-        $fileName = $this->getFileName();
-
-        if ($zip->open($fileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new ZipArchiveCreateException('Failed to create zip archive');
-        }
+        $zip = new ZipStream(
+            outputStream: $callback,
+            sendHttpHeaders: false,
+        );
 
         $manifest = $this->generateManifest();
 
-        $zip->addFromString($manifest->getFileName(), $manifest->toJson());
+        $zip->addFile(fileName: $manifest->getFileName(), data: $manifest->toJson());
 
-        return $fileName;
+        foreach ($this->overrides as $override) {
+            $zip->addFile(fileName: $override->path, data: $override->content);
+        }
+
+        $zip->finish();
     }
 
     private function generateManifest(): Manifest

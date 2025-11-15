@@ -1,5 +1,7 @@
 <?php namespace MetaMods;
 
+use MetaMods\Enums\ResourceEnvironmentTypesEnum;
+
 class Manifest
 {
     const GAME = 'minecraft';
@@ -37,6 +39,16 @@ class Manifest
 
         foreach ($this->modpack->getResources() as $resource) {
             $this->manifest['modpack']['files'][$resource->path] = [
+                'hashes' => [
+                    'md5' => $resource->md5,
+                    'sha1' => $resource->sha1,
+                    'sha512' => $resource->sha1,
+                ],
+                'downloads' => [$resource->downloadUrl],
+                'env' => [
+                    'client_side' => $resource->clientSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->clientSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value),
+                    'server_side' => $resource->serverSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->serverSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value)
+                ],
                 'size' => $resource->size,
             ];
         }

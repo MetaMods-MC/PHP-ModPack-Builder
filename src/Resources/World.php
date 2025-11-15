@@ -1,14 +1,14 @@
 <?php namespace MetaMods\Resources;
 
-class World
+class World extends Resource
 {
-    public function __construct(array $data)
+    public function __construct(int $id)
     {
-        $this->path = sprintf("%s/%s/", $this->getPathPrefix(), $data['filename']);
+        $this->id = $id;
     }
 
-    private function getPathPrefix(): string
+    protected function getPathPrefix(): string
     {
-        return 'worlds';
+        return 'saves';
     }
 }

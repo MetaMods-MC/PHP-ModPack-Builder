@@ -1,13 +1,13 @@
 <?php namespace MetaMods\Resources;
 
-class Mod
+class Mod extends Resource
 {
-    public function __construct(array $data, $local = false)
+    public function __construct(int $id)
     {
-        $this->path = sprintf("%s/%s", $this->getPathPrefix(), $data['filename']);
+        $this->id = $id;
     }
 
-    private function getPathPrefix(): string
+    protected function getPathPrefix(): string
     {
         return 'mods';
     }
