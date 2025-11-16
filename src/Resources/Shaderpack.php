@@ -1,6 +1,6 @@
 <?php namespace MetaMods\Resources;
 
-class Shader extends Resource
+class Shaderpack extends Resource
 {
     public function __construct(int $id)
     {

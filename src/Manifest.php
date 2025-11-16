@@ -1,6 +1,7 @@
 <?php namespace MetaMods;
 
 use MetaMods\Enums\ResourceEnvironmentTypesEnum;
+use MetaMods\Loaders\Loader;
 
 class Manifest
 {
@@ -29,28 +30,34 @@ class Manifest
         $this->manifest = [
             'game' => self::GAME,
             'format_version' => self::FORMAT_VERSION,
-            'modpack' => [
+            'metadata' => [
                 'name' => $this->modpack->name,
                 'version' => $this->modpack->version,
                 'summary' => $this->modpack->summary,
-                'files' => []
-            ]
+            ],
+            self::GAME => $this->modpack->getMinecraftVersions(),
+            'loaders' => array_map(fn (Loader $loader) => [$loader->id => $loader->version], $this->modpack->getLoaders()),
+            'files' => [],
         ];
 
         foreach ($this->modpack->getResources() as $resource) {
-            $this->manifest['modpack']['files'][$resource->path] = [
-                'hashes' => [
-                    'md5' => $resource->md5,
-                    'sha1' => $resource->sha1,
-                    'sha512' => $resource->sha1,
-                ],
-                'downloads' => [$resource->downloadUrl],
-                'env' => [
-                    'client_side' => $resource->clientSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->clientSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value),
-                    'server_side' => $resource->serverSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->serverSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value)
-                ],
-                'size' => $resource->size,
-            ];
+            try {
+                $this->manifest['files'][$resource->path] = [
+                    'hashes' => [
+                        'sha1' => $resource->sha1,
+                        'sha512' => $resource->sha1,
+                    ],
+                    'downloads' => [$resource->downloadUrl],
+                    'env' => [
+                        'client_side' => $resource->clientSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->clientSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value),
+                        'server_side' => $resource->serverSide === 1 ? ResourceEnvironmentTypesEnum::REQUIRED->value : ($resource->serverSide === -1 ? ResourceEnvironmentTypesEnum::INCOMPATIBLE->value : ResourceEnvironmentTypesEnum::OPTIONAL->value)
+                    ],
+                    'size' => $resource->size,
+                ];
+            }
+            catch (\Exception $e) {
+                throw new \Exception($resource->downloadUrl);
+            }
         }
 
         return $this;

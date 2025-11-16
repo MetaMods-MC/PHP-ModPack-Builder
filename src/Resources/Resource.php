@@ -20,9 +20,9 @@ abstract class Resource
 
     public string $downloadUrl;
 
-    public int $clientSide;
+    public ?int $clientSide;
 
-    public int $serverSide;
+    public ?int $serverSide;
 
     public ?string $content;
 
@@ -31,11 +31,11 @@ abstract class Resource
     public function saturate($data): self
     {
         if (empty($this->size)) {
-            $this->size = $data->files[0]->size;
+            $this->size = $data->size;
         }
 
         if (empty($this->fileName)) {
-            $this->fileName = $data->files[0]->file_name;
+            $this->fileName = $data->file_name;
         }
 
         if (empty($this->path)) {
@@ -43,19 +43,19 @@ abstract class Resource
         }
 
         if (empty($this->md5)) {
-            $this->md5 = $data->files[0]->md5;
+            $this->md5 = $data->md5;
         }
 
         if (empty($this->sha512)) {
-            $this->sha512 = $data->files[0]->sha512;
+            $this->sha512 = $data->sha512;
         }
 
         if (empty($this->sha1)) {
-            $this->sha1 = $data->files[0]->sha1;
+            $this->sha1 = $data->sha1;
         }
 
         if (empty($this->downloadUrl)) {
-            $this->downloadUrl = $data->files[0]->download_url;
+            $this->downloadUrl = $data->download_url;
         }
 
         if (empty($this->clientSide)) {

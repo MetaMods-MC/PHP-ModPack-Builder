@@ -1,6 +1,8 @@
 <?php namespace MetaMods;
 
 use GuzzleHttp\Client;
+use MetaMods\Loaders\Loader;
+use MetaMods\Modpack\Exceptions\UnsupportedLoaderException;
 use ZipStream\ZipStream;
 use MetaMods\Resources\Override;
 use MetaMods\Resources\Resource;
@@ -9,6 +11,10 @@ use MetaMods\Modpack\Exceptions\ZipArchiveCreateException;
 
 class Modpack
 {
+    private array $minecraftVersions = [];
+
+    private array $loaders = [];
+
     private array $resources = [];
 
     private array $overrides = [];
@@ -24,6 +30,39 @@ class Modpack
         $this->name = $name;
         $this->version = $version;
         $this->summary = $summary;
+    }
+
+    public function setMinecraftVersions(string|array $minecraftVersions): self
+    {
+        if (!is_array($minecraftVersions)) {
+            $minecraftVersions = [$minecraftVersions];
+        }
+
+        foreach ($minecraftVersions as $minecraftVersion) {
+            $this->minecraftVersions[] = $minecraftVersion;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @throws UnsupportedLoaderException
+     */
+    public function setLoaders(Loader|array $loaders): self
+    {
+        if (!is_array($loaders)) {
+            $loaders = [$loaders];
+        }
+
+        foreach ($loaders as $loader) {
+            if (!$loader instanceof Loader) {
+                throw new UnsupportedLoaderException('Loaders must be an array of Loader');
+            }
+
+            $this->loaders[] = $loader;
+        }
+
+        return $this;
     }
 
     public static function create(string $name, string $version = '1.0.0', string $summary = null): self
@@ -53,6 +92,16 @@ class Modpack
         return $this->resources;
     }
 
+    public function getLoaders(): array
+    {
+        return $this->loaders;
+    }
+
+    public function getMinecraftVersions(): array
+    {
+        return $this->minecraftVersions;
+    }
+
     private function fetchResources()
     {
         $ids = array_map(fn (Resource $resource) => $resource->id, $this->resources);
@@ -65,7 +114,7 @@ class Modpack
             'verify' => false,
         ]);
 
-        $request = $client->get('https://api.metamods.net/v1/resources/findMany', [
+        $request = $client->get('https://api.metamods.net/v1/files/findMany', [
             'json' => $ids
         ]);
 
@@ -89,7 +138,7 @@ class Modpack
         $this->fetchResources();
 
         $zip = new ZipStream(
-            outputStream: $callback,
+            outputStream: CallbackStreamWrapper::open($callback),
             sendHttpHeaders: false,
         );
 
